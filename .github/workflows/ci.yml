@@ -19,6 +19,20 @@ jobs:
           repository: metabase/metabase
           path: ${{ github.workspace }}/metabase
           ref: release-x.63.x
+      - name: Check postgres jdbc driver version matches metabase
+        run: |
+          METABASE_TAG=$(grep -oP '(?<=:git/tag ")v[0-9.]+' driver/deps.edn)
+          MB_PG=$(curl -s "https://raw.githubusercontent.com/metabase/metabase/${METABASE_TAG}/deps.edn" | grep -oP 'org\.postgresql/postgresql\s+\{:mvn/version "\K[^"]+')
+          DRIVER_PG=$(grep -oP 'org\.postgresql/postgresql\s+\{:mvn/version "\K[^"]+' driver/deps.edn)
+          echo "metabase ${METABASE_TAG} pins postgres jdbc ${MB_PG}; driver pins ${DRIVER_PG}"
+          if [ -z "${MB_PG}" ]; then
+            echo "::error::Could not extract postgres jdbc version from metabase ${METABASE_TAG} deps.edn"
+            exit 1
+          fi
+          if [ "${MB_PG}" != "${DRIVER_PG}" ]; then
+            echo "::error::Postgres JDBC driver out of sync with metabase ${METABASE_TAG} (metabase: ${MB_PG}, driver: ${DRIVER_PG}). Run: python update-version.py ${METABASE_TAG}"
+            exit 1
+          fi
       - name: install java
         uses: actions/setup-java@v5
         with:
