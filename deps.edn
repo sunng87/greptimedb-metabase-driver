@@ -2,7 +2,7 @@
  ["src" "resources"]
 
  :deps
- {org.postgresql/postgresql {:mvn/version "42.7.11"}}
+ {org.postgresql/postgresql {:mvn/version "42.7.12"}}
 
  :mvn/repos
  {"opensaml" {:url "https://build.shibboleth.net/nexus/content/repositories/releases/"}}
